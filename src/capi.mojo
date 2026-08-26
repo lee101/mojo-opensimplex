@@ -1,16 +1,8 @@
 """C ABI and Cartesian-grid kernels for the Python bindings."""
 
-from std.algorithm import parallelize
-
 from core import IPtr, noise2, noise3, noise4
 
 comptime FPtr = UnsafePointer[Float64, AnyOrigin[mut=True]]
-
-
-def worker_count(n: Int) -> Int:
-    if n < 4096:
-        return 1
-    return min(16, n)
 
 
 @export("mos_noise2")
@@ -113,21 +105,10 @@ def mos_noise2_array(
     var gradients = IPtr(unsafe_from_address=gradients_addr)
     var dst = FPtr(unsafe_from_address=dst_addr)
     var total = nx * ny
-    var workers = worker_count(total)
-
-    @parameter
-    def process(worker: Int):
-        var start = worker * total // workers
-        var stop = (worker + 1) * total // workers
-        for i in range(start, stop):
-            var xi = i % nx
-            var yi = i // nx
-            dst[i] = noise2(x[xi], y[yi], perm, gradients)
-
-    if workers > 1:
-        parallelize[process](workers, workers)
-    else:
-        process(0)
+    for i in range(total):
+        var xi = i % nx
+        var yi = i // nx
+        dst[i] = noise2(x[xi], y[yi], perm, gradients)
     return 0
 
 
@@ -172,22 +153,11 @@ def mos_noise3_array(
     var dst = FPtr(unsafe_from_address=dst_addr)
     var plane = nx * ny
     var total = plane * nz
-    var workers = worker_count(total)
-
-    @parameter
-    def process(worker: Int):
-        var start = worker * total // workers
-        var stop = (worker + 1) * total // workers
-        for i in range(start, stop):
-            var xi = i % nx
-            var yi = (i // nx) % ny
-            var zi = i // plane
-            dst[i] = noise3(x[xi], y[yi], z[zi], perm, perm_grad, gradients)
-
-    if workers > 1:
-        parallelize[process](workers, workers)
-    else:
-        process(0)
+    for i in range(total):
+        var xi = i % nx
+        var yi = (i // nx) % ny
+        var zi = i // plane
+        dst[i] = noise3(x[xi], y[yi], z[zi], perm, perm_grad, gradients)
     return 0
 
 
@@ -237,21 +207,10 @@ def mos_noise4_array(
     var plane = nx * ny
     var volume = plane * nz
     var total = volume * nw
-    var workers = worker_count(total)
-
-    @parameter
-    def process(worker: Int):
-        var start = worker * total // workers
-        var stop = (worker + 1) * total // workers
-        for i in range(start, stop):
-            var xi = i % nx
-            var yi = (i // nx) % ny
-            var zi = (i // plane) % nz
-            var wi = i // volume
-            dst[i] = noise4(x[xi], y[yi], z[zi], w[wi], perm, gradients)
-
-    if workers > 1:
-        parallelize[process](workers, workers)
-    else:
-        process(0)
+    for i in range(total):
+        var xi = i % nx
+        var yi = (i // nx) % ny
+        var zi = (i // plane) % nz
+        var wi = i // volume
+        dst[i] = noise4(x[xi], y[yi], z[zi], w[wi], perm, gradients)
     return 0
