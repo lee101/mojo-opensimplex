@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ctypes import addressof, c_double, c_int64
+from ctypes import c_int64
 import time
 
 import numpy as np
@@ -98,38 +98,24 @@ class OpenSimplex:
         return self._seed
 
     def noise2(self, x: float, y: float) -> float:
-        result = c_double()
-        check_status(
-            lib().mos_noise2(
-                x, y, self._perm_addr, _GRADIENTS2_ADDR, addressof(result)
-            )
+        return lib().mos_noise2_value(
+            x, y, self._perm_addr, _GRADIENTS2_ADDR
         )
-        return result.value
 
     def noise3(self, x: float, y: float, z: float) -> float:
-        result = c_double()
-        check_status(
-            lib().mos_noise3(
-                x,
-                y,
-                z,
-                self._perm_addr,
-                self._perm_grad_index3_addr,
-                _GRADIENTS3_ADDR,
-                addressof(result),
-            )
+        return lib().mos_noise3_value(
+            x,
+            y,
+            z,
+            self._perm_addr,
+            self._perm_grad_index3_addr,
+            _GRADIENTS3_ADDR,
         )
-        return result.value
 
     def noise4(self, x: float, y: float, z: float, w: float) -> float:
-        result = c_double()
-        check_status(
-            lib().mos_noise4(
-                x, y, z, w, self._perm_addr, _GRADIENTS4_ADDR,
-                addressof(result),
-            )
+        return lib().mos_noise4_value(
+            x, y, z, w, self._perm_addr, _GRADIENTS4_ADDR
         )
-        return result.value
 
     def noise2array(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         xa, ya = _axis(x), _axis(y)

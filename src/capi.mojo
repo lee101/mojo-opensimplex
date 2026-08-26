@@ -5,6 +5,59 @@ from core import IPtr, noise2, noise3, noise4
 comptime FPtr = UnsafePointer[Float64, AnyOrigin[mut=True]]
 
 
+@export("mos_noise2_value")
+def mos_noise2_value(
+    x: Float64,
+    y: Float64,
+    perm_addr: Int,
+    gradients_addr: Int,
+) abi("C") -> Float64:
+    return noise2(
+        x,
+        y,
+        IPtr(unsafe_from_address=perm_addr),
+        IPtr(unsafe_from_address=gradients_addr),
+    )
+
+
+@export("mos_noise3_value")
+def mos_noise3_value(
+    x: Float64,
+    y: Float64,
+    z: Float64,
+    perm_addr: Int,
+    perm_grad_addr: Int,
+    gradients_addr: Int,
+) abi("C") -> Float64:
+    return noise3(
+        x,
+        y,
+        z,
+        IPtr(unsafe_from_address=perm_addr),
+        IPtr(unsafe_from_address=perm_grad_addr),
+        IPtr(unsafe_from_address=gradients_addr),
+    )
+
+
+@export("mos_noise4_value")
+def mos_noise4_value(
+    x: Float64,
+    y: Float64,
+    z: Float64,
+    w: Float64,
+    perm_addr: Int,
+    gradients_addr: Int,
+) abi("C") -> Float64:
+    return noise4(
+        x,
+        y,
+        z,
+        w,
+        IPtr(unsafe_from_address=perm_addr),
+        IPtr(unsafe_from_address=gradients_addr),
+    )
+
+
 @export("mos_noise2")
 def mos_noise2(
     x: Float64,

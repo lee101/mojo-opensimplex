@@ -161,6 +161,24 @@ def test_native_abi_rejects_invalid_addresses_lengths_and_overflow():
     assert native.mos_noise4_array(0, 0, 0, 3, 0, 3, 0, 3, 0, 0, 0) == 0
 
 
+def test_scalar_direct_return_abi_matches_checked_abi():
+    native = lib()
+    instance = mos.OpenSimplex(73)
+    output = c_double()
+    status = native.mos_noise2(
+        -12.5,
+        7.25,
+        instance._perm_addr,
+        mos.api._GRADIENTS2_ADDR,
+        addressof(output),
+    )
+    direct = native.mos_noise2_value(
+        -12.5, 7.25, instance._perm_addr, mos.api._GRADIENTS2_ADDR
+    )
+    assert status == 0
+    assert direct == output.value
+
+
 def test_public_api_names_and_signatures():
     names = {
         "DEFAULT_SEED", "OpenSimplex", "get_seed", "noise2", "noise2array",

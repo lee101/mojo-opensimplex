@@ -72,21 +72,27 @@ so its documented pure-Python fallback is the reference.
 
 | case | mojo-opensimplex | opensimplex 0.4.5.1 | speedup |
 | --- | ---: | ---: | ---: |
-| `noise2` scalar x 100,000 | 513.58 ms | 1.88 s | 3.66x |
-| `noise2array` 400 x 400 | 7.30 ms | 2.34 s | 320.77x |
-| `noise3array` 40 x 40 x 40 | 14.30 ms | 2.00 s | 139.88x |
-| `noise4array` 16^4 | 8.88 ms | 4.19 s | 472.10x |
+| `noise2` scalar x 100,000 | 246.09 ms | 1.34 s | 5.45x |
+| `noise2array` 400 x 400 | 5.81 ms | 1.98 s | 340.82x |
+| `noise3array` 40 x 40 x 40 | 6.95 ms | 1.64 s | 236.18x |
+| `noise4array` 16^4 | 13.46 ms | 3.08 s | 228.73x |
 
-Scalar calls still pay one ctypes transition each, but reuse cached addresses
-for their stable NumPy-owned permutation and gradient buffers. Grid calls
-cross the ABI once and spread independent points across up to 16 worker tasks,
-which is where the large gains come from.
+Scalar calls still pay one ctypes transition each, but return their value
+directly instead of allocating and filling a temporary ctypes output object.
+They reuse cached addresses for stable NumPy-owned permutation and gradient
+buffers. Grid calls cross the ABI once and evaluate their Cartesian products
+in compiled Mojo loops.
 
 No GPU path is provided. Each lattice contribution performs several dependent
 permutation and gradient table reads for a small amount of arithmetic, leaving
 the effective arithmetic intensity below the roughly 2-flop-per-byte threshold;
 point-dependent region branches would also cause warp divergence. Run
 `pixi run bench` to reproduce the table on the current machine.
+
+The profiled target was the scalar Python-to-Mojo call boundary. The grid
+kernels were already more than 200x ahead of upstream, so their branch-heavy,
+data-dependent lattice loops were deliberately left serial and scalar rather
+than forcing SIMD gathers or paying thread-launch overhead.
 
 ## How it works
 

@@ -17,6 +17,9 @@ I = ctypes.c_int64
 F = ctypes.c_double
 
 _SIGNATURES = {
+    "mos_noise2_value": ([F, F, I, I], F),
+    "mos_noise3_value": ([F, F, F, I, I, I], F),
+    "mos_noise4_value": ([F, F, F, F, I, I], F),
     "mos_noise2": ([F, F, I, I, I], I),
     "mos_noise3": ([F, F, F, I, I, I, I], I),
     "mos_noise4": ([F, F, F, F, I, I, I], I),
